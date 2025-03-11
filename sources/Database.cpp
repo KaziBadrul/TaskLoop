@@ -120,9 +120,8 @@ bool Database::removeUserFromGroup(int groupId, int userId)
 }
 
 // Create a task for a group
-bool Database::createTask(const std::string &taskName, const std::string &description, const std::string &dueDate, int priority, int groupId, int creatorId)
+bool Database::createTask(const std::string &taskName, const std::string &description, const std::time_t &dueDate, int priority, int groupId, int creatorId)
 {
-    // First, get the creator's name
     std::string creatorName;
     std::string userSql = "SELECT username FROM users WHERE id = ?;";
     sqlite3_stmt *userStmt;
@@ -142,7 +141,6 @@ bool Database::createTask(const std::string &taskName, const std::string &descri
         return false;
     }
 
-    // Now, insert task with creator_name
     std::string sql = "INSERT INTO tasks (name, description, due_date, priority, status, group_id, creator_id, creator_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
     sqlite3_stmt *stmt;
 
@@ -154,7 +152,7 @@ bool Database::createTask(const std::string &taskName, const std::string &descri
 
     sqlite3_bind_text(stmt, 1, taskName.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, description.c_str(), -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text(stmt, 3, dueDate.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt, 3, dueDate);
     sqlite3_bind_int(stmt, 4, priority);
     sqlite3_bind_int(stmt, 5, static_cast<int>(TaskStatus::PENDING));
     sqlite3_bind_int(stmt, 6, groupId);
@@ -220,7 +218,7 @@ std::vector<Task> Database::getGroupTasks(int groupId)
         int taskId = sqlite3_column_int(stmt, 0);
         std::string taskName = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
         std::string description = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 2));
-        std::string dueDate = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 3));
+        std::time_t dueDate = sqlite3_column_int64(stmt, 3);
         int priority = sqlite3_column_int(stmt, 4);
         int status = sqlite3_column_int(stmt, 5);
         int creatorId = sqlite3_column_int(stmt, 6);
@@ -294,7 +292,6 @@ bool Database::addGroupMember(int groupId, const std::string &username)
 
     sqlite3_finalize(stmt);
 
-    // If userId is found, insert into group_members table
     if (userId != -1)
     {
         std::string insertSQL = "INSERT INTO group_members (group_id, user_id) VALUES (?, ?);";

@@ -7,6 +7,7 @@
 #include "Task.h"
 #include <string>
 #include <iostream>
+#include <ctime>
 
 class Database
 {
@@ -25,7 +26,7 @@ public:
     bool createGroup(const std::string &groupName, int ownerId);
     bool addUserToGroup(int groupId, int userId);
     bool removeUserFromGroup(int groupId, int userId);
-    bool createTask(const std::string &taskName, const std::string &description, const std::string &dueDate, int priority, int groupId, int userId);
+    bool createTask(const std::string &taskName, const std::string &description, const std::time_t &dueDate, int priority, int groupId, int userId);
     std::vector<Group> getUserGroups(int userId);
     std::vector<User> getGroupMembers(int groupId);
     bool addGroupMember(int groupId, const std::string &username);

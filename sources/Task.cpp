@@ -1,7 +1,10 @@
 #include "../headers/Task.h"
 #include <iostream>
-Task::Task(int id, std::string name, std::string desc, std::string due, PriorityLevel p, int groupId, TaskStatus s, int userId, std::string creator)
-    : taskId(id), taskName(name), description(desc), dueDate(due), priority(p), groupAssignmentId(groupId), status(TaskStatus::PENDING), creatorId(userId), creatorName(creator) {}
+Task::Task(int id, std::string name, std::string desc, std::time_t due, PriorityLevel p, int groupId, TaskStatus s, int userId, std::string creator)
+    : taskId(id), taskName(name), description(desc), dueDate(due), priority(p), groupAssignmentId(groupId), status(TaskStatus::PENDING), creatorId(userId), creatorName(creator)
+{
+    taskTimer = new Timer(id, due, this);
+}
 
 int Task::getTaskId() const
 {
@@ -17,7 +20,7 @@ std::string Task::getDescription() const
 }
 std::string Task::getDueDate() const
 {
-    return dueDate;
+    return taskTimer->getDueDate();
 }
 PriorityLevel Task::getPriority() const
 {
@@ -38,6 +41,10 @@ int Task::getCreatorId() const
 std::string Task::getCreatorName() const
 {
     return creatorName;
+}
+std::string Task::getTimeRemaining() const
+{
+    return taskTimer->getTimeRemaining();
 }
 void Task::markComplete()
 {

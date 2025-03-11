@@ -3,6 +3,10 @@
 #define TIMER_H
 
 #include <string>
+#include <ctime>
+#include <sstream>
+#include <iomanip>
+#include "./Color.h"
 
 class Task;
 
@@ -10,14 +14,15 @@ class Timer
 {
 private:
     int timerId;
-    std::string startTime;
-    std::string endTime;
+    std::time_t dueTime;
     Task *task;
 
 public:
-    Timer(int id, std::string start, std::string end, Task *t);
+    Timer(int id, std::time_t due, Task *t);
     void start();
     void stop();
+    std::string getTimeRemaining() const;
+    std::string getDueDate() const;
 };
 
 #endif

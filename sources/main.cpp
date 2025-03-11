@@ -1,16 +1,38 @@
 #include "../headers/Database.h"
 #include "../headers/User.h"
+#include "../headers/Color.h"
 #include <iostream>
+#include <ctime>
+#include <iomanip>
 
-// Function to set the console text color
-void SetColor(int textColor)
+// Function to convert string to time
+std::time_t stringToTimeT(const std::string &dateString)
 {
-    std::cout << "\033[" << textColor << "m";
+    std::tm timeStruct = {};
+    std::istringstream ss(dateString);
+
+    // Assuming the date format is YYYY-MM-DD
+    ss >> std::get_time(&timeStruct, "%Y-%m-%d");
+
+    if (ss.fail())
+    {
+        std::cerr << "Failed to parse date.\n";
+        return std::time_t();
+    }
+
+    return std::mktime(&timeStruct); // Convert to time_t
 }
 
-// Function to reset the console color
-void ResetColor() { std::cout << "\033[0m"; }
+// // Function to set the console text color
+// void SetColor(int textColor)
+// {
+//     std::cout << "\033[" << textColor << "m";
+// }
 
+// // Function to reset the console color
+// void ResetColor() { std::cout << "\033[0m"; }
+
+// Creating a group
 void createGroup(Database &db, User &user)
 {
     std::cout << "Enter group name: ";
@@ -33,6 +55,7 @@ void createTask(int groupNumber, User &user, Database &db, std::vector<Group> &g
 void completeTask(std::vector<Group> groups, int groupNumber, Database &db);
 void taskMenu(int groupNumber, User &user, Database &db, std::vector<Group> &groups);
 
+// Viewing Groups
 void viewGroups(Database &db, User &user)
 {
     std::vector<Group> groups = db.getUserGroups(user.getUserId());
@@ -43,7 +66,9 @@ void viewGroups(Database &db, User &user)
     }
     else
     {
+        SetColor(94);
         std::cout << "Your groups:\n";
+        ResetColor();
         int i = 1;
         for (const auto &group : groups)
         {
@@ -56,6 +81,7 @@ void viewGroups(Database &db, User &user)
     int groupNumber;
     std::cin >> groupNumber;
     std::cin.ignore();
+    std::cout << std::endl;
 
     // Display tasks for the selected group
     if (groupNumber >= 1 && groupNumber <= groups.size())
@@ -68,12 +94,13 @@ void viewGroups(Database &db, User &user)
         return;
     }
 
-    std::cout << "1. Edit Tasks\n2. View Members\n0. Return to Menu\n";
+    std::cout << "1. View Tasks\n2. View Members\n0. Return to Menu\n";
     std::cout << "----------------\n";
     std::cout << "Enter choice: ";
     int choice1;
     std::cin >> choice1;
     std::cin.ignore();
+    std::cout << std::endl;
 
     while (choice1 != 0)
     {
@@ -121,6 +148,7 @@ void viewGroups(Database &db, User &user)
                 std::getline(std::cin, username);
                 if (db.addGroupMember(groups[groupNumber - 1].getGroupId(), username))
                 {
+                    groups[groupNumber - 1].addUser(new User(username));
                     std::cout << "Member added successfully!\n";
                 }
                 else
@@ -169,6 +197,7 @@ void taskMenu(int groupNumber, User &user, Database &db, std::vector<Group> &gro
     int choice;
     std::cin >> choice;
     std::cin.ignore();
+    std::cout << std::endl;
 
     while (choice != 0)
     {
@@ -181,6 +210,16 @@ void taskMenu(int groupNumber, User &user, Database &db, std::vector<Group> &gro
         else if (choice == 2)
         {
             completeTask(groups, groupNumber, db);
+        }
+
+        else if (choice == 0)
+        {
+            return;
+        }
+
+        else
+        {
+            std::cout << "Invalid choice.\n";
         }
 
         showTasks(groupNumber, db, groups);
@@ -209,12 +248,17 @@ void showTasks(int groupNumber, Database &db, std::vector<Group> &groups)
             for (const auto &task : tasks)
             {
                 std::cout << std::string(10, '-') << std::endl;
+                SetColor(94);
                 std::cout << i << ". " << task.getTaskName() << std::endl;
+                ResetColor();
                 std::cout << "Description: " << task.getDescription() << std::endl;
-                std::cout << "Due Date: " << task.getDueDate() << std::endl;
                 std::cout << "Priority: " << static_cast<int>(task.getPriority()) << std::endl;
                 std::cout << "Status: " << static_cast<int>(task.getStatus()) << std::endl;
                 std::cout << "Creator: " << task.getCreatorName() << std::endl;
+                std::cout << "Due Date: " << task.getDueDate() << std::endl;
+
+                std::cout << "Remaining Time: " << task.getTimeRemaining() << std::endl;
+                ResetColor();
                 std::cout << std::string(10, '-') << std::endl;
                 i++;
             }
@@ -227,18 +271,27 @@ void createTask(int groupNumber, User &user, Database &db, std::vector<Group> &g
     std::cout << "Enter task name: ";
     std::string taskName;
     std::getline(std::cin, taskName);
+
     std::cout << "Enter task description: ";
     std::string taskDescription;
     std::getline(std::cin, taskDescription);
-    std::cout << "Enter task due date: ";
+
+    std::cout << "Enter task due date (YYYY-MM-DD): ";
     std::string taskDueDate;
     std::getline(std::cin, taskDueDate);
+    std::time_t dueTime = stringToTimeT(taskDueDate);
+    if (dueTime == std::time_t())
+    {
+        std::cout << "Invalid date format. Task creation failed.\n";
+        return;
+    }
+
     std::cout << "Enter task priority (1-3): ";
     int taskPriority;
     std::cin >> taskPriority;
     std::cin.ignore();
 
-    if (db.createTask(taskName, taskDescription, taskDueDate, taskPriority, groups[groupNumber - 1].getGroupId(), user.getUserId()))
+    if (db.createTask(taskName, taskDescription, dueTime, taskPriority, groups[groupNumber - 1].getGroupId(), user.getUserId()))
     {
         std::cout << "Task created successfully!\n";
     }

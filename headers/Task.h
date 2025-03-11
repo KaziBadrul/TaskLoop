@@ -1,6 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 #include <string>
+#include <ctime>
 #include "Timer.h"
 enum class PriorityLevel
 {
@@ -20,15 +21,16 @@ private:
     int taskId;
     std::string taskName;
     std::string description;
-    std::string dueDate;
+    std::time_t dueDate;
     PriorityLevel priority;
     int groupAssignmentId;
     TaskStatus status;
     int creatorId;
     std::string creatorName;
+    Timer *taskTimer;
 
 public:
-    Task(int id, std::string name, std::string desc, std::string due, PriorityLevel p, int groupId, TaskStatus s, int userId, std::string creator);
+    Task(int id, std::string name, std::string desc, std::time_t due, PriorityLevel p, int groupId, TaskStatus s, int userId, std::string creator);
     int getTaskId() const;
     std::string getTaskName() const;
     std::string getDescription() const;
@@ -38,6 +40,7 @@ public:
     int getCreatorId() const;
     std::string getCreatorName() const;
     TaskStatus getStatus() const;
+    std::string getTimeRemaining() const;
     void markComplete();
     void markInProgress();
     void markPending();

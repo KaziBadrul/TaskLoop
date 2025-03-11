@@ -1,6 +1,7 @@
 #include "../headers/User.h"
 #include <iostream>
 
+User::User(std::string uname) : username(uname) {}
 User::User(int id, std::string uname, std::string mail, std::string pass)
     : userId(id), username(uname), email(mail), password(pass) {}
 void User::login()

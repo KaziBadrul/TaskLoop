@@ -96,6 +96,8 @@
     "streambuf": "cpp",
     "cinttypes": "cpp",
     "typeinfo": "cpp",
-    "optional": "cpp"
+    "optional": "cpp",
+    "ctime": "cpp",
+    "iomanip": "cpp"
   }
 }
