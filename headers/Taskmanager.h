@@ -1,10 +1,13 @@
 #ifndef TASKMANAGER_H
 #define TASKMANAGER_H
 
-#include "Database.h"
-#include "User.h"
-#include "Group.h"
-#include "Task.h"
+#include "./Database.h"
+#include "./User.h"
+#include "./Group.h"
+#include "./Task.h"
+#include "./Color.h"
+#include <ctime>
+#include <iomanip>
 
 class TaskManager
 {
@@ -21,7 +24,12 @@ public:
     void handleSignUp();
     void handleLogin();
     void handleGroupMenu();
-    void handleTaskMenu(int groupId);
+    void handleSelectedGroupMenu(int groupId, Group group);
+    void handleMemberMenu(Group group, int groupId);
+    void addMember(Group group, int groupId);
+    void removeMember(Group group, int groupId);
+    void handleViewTasks(Group group, int groupId);
+    void handleTaskMenu(Group group, int groupId);
     void createGroup();
     void viewGroups();
     void createTask(int groupId);
