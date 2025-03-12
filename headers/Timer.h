@@ -8,6 +8,8 @@
 #include <iomanip>
 #include "./Color.h"
 
+std::time_t stringToTimeT(const std::string &dateString);
+
 class Task;
 
 class Timer

@@ -1,6 +1,24 @@
 #include "../headers/Timer.h"
 #include <iostream>
 
+// Function to convert string to time
+std::time_t stringToTimeT(const std::string &dateString)
+{
+    std::tm timeStruct = {};
+    std::istringstream ss(dateString);
+
+    // Assuming the date format is YYYY-MM-DD
+    ss >> std::get_time(&timeStruct, "%Y-%m-%d");
+
+    if (ss.fail())
+    {
+        std::cerr << "Failed to parse date.\n";
+        return std::time_t();
+    }
+
+    return std::mktime(&timeStruct); // Convert to time_t
+}
+
 Timer::Timer(int id, std::time_t due, Task *t)
     : timerId(id), dueTime(due), task(t) {}
 

@@ -2,6 +2,7 @@
 #define DATABASE_H
 
 #include "./sqlite3.h"
+#include "bcrypt.h"
 #include "User.h"
 #include "Group.h"
 #include "Task.h"

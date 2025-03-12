@@ -1,36 +1,16 @@
 #include "../headers/Database.h"
 #include "../headers/User.h"
 #include "../headers/Color.h"
+#include "../headers/Timer.h"
 #include <iostream>
 #include <ctime>
 #include <iomanip>
+#include <windows.h>
 
-// Function to convert string to time
-std::time_t stringToTimeT(const std::string &dateString)
+void setconsolecolor(int textColor, int bgColor)
 {
-    std::tm timeStruct = {};
-    std::istringstream ss(dateString);
-
-    // Assuming the date format is YYYY-MM-DD
-    ss >> std::get_time(&timeStruct, "%Y-%m-%d");
-
-    if (ss.fail())
-    {
-        std::cerr << "Failed to parse date.\n";
-        return std::time_t();
-    }
-
-    return std::mktime(&timeStruct); // Convert to time_t
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (textColor + (bgColor * 16)));
 }
-
-// // Function to set the console text color
-// void SetColor(int textColor)
-// {
-//     std::cout << "\033[" << textColor << "m";
-// }
-
-// // Function to reset the console color
-// void ResetColor() { std::cout << "\033[0m"; }
 
 // Creating a group
 void createGroup(Database &db, User &user)
@@ -94,16 +74,16 @@ void viewGroups(Database &db, User &user)
         return;
     }
 
-    std::cout << "1. View Tasks\n2. View Members\n0. Return to Menu\n";
-    std::cout << "----------------\n";
-    std::cout << "Enter choice: ";
-    int choice1;
-    std::cin >> choice1;
-    std::cin.ignore();
-    std::cout << std::endl;
-
-    while (choice1 != 0)
+    int choice1 = 1;
+    do
     {
+        std::cout << "1. View Tasks\n2. View Members\n0. Return to Menu\n";
+        std::cout << "----------------\n";
+        std::cout << "Enter choice: ";
+        std::cin >> choice1;
+        std::cin.ignore();
+        std::cout << std::endl;
+
         // Open Task Menu
         if (choice1 == 1)
         {
@@ -183,7 +163,7 @@ void viewGroups(Database &db, User &user)
         {
             std::cout << "Invalid choice.\n";
         }
-    }
+    } while (choice1 != 0);
 }
 
 //! TASK FUNCTIONS
@@ -338,12 +318,26 @@ void completeTask(std::vector<Group> groups, int groupNumber, Database &db)
 int main()
 {
     Database db("database.db");
-
+    setconsolecolor(0, 7);
     std::string username, email, password;
     int choice;
-    std::cout << "\033[32mWelcome to Task Manager!\033[0m\n";
+    SetColor(34);
+    std::cout << R"(
+       
+  _______        _    _                       
+ |__   __|      | |  | |                      
+    | | __ _ ___| | _| |     ___   ___  _ __  
+    | |/ _` / __| |/ / |    / _ \ / _ \| '_ \ 
+    | | (_| \__ \   <| |___| (_) | (_) | |_) |
+    |_|\__,_|___/_|\_\______\___/ \___/| .__/ 
+                                       | |    
+                                       |_|    
+
+       )";
+    ResetColor();
 
     SetColor(94);
+    std::cout << std::endl;
     std::cout << "1. Sign Up\n2. Log In\n0. Exit\n";
     SetColor(0);
     std::cout << "----------------\n";
@@ -386,18 +380,22 @@ int main()
             if (db.loginUser(username, password, user))
             {
                 std::cout << "Login successful!\n";
-                std::cout << "\n\nWelcome, " << user.getUsername() << std::endl;
+                std::cout << "\n\nWelcome, ";
+                SetColor(92);
+                std::cout << user.getUsername() << std::endl;
+                ResetColor();
 
                 //! GROUPS MENU
-                std::cout << "1. Create a new group\n2. View groups\n0. Return to Menu\n";
-                std::cout << "----------------\n";
-                std::cout << "Enter choice: ";
 
-                std::cin >> choice;
-                std::cin.ignore();
-
-                while (choice != 0)
+                do
                 {
+                    std::cout
+                        << "1. Create a new group\n2. View groups\n0. Close app\n";
+                    std::cout << "----------------\n";
+                    std::cout << "Enter choice: ";
+
+                    std::cin >> choice;
+                    std::cin.ignore();
                     // Create a new group
                     if (choice == 1)
                     {
@@ -410,17 +408,18 @@ int main()
                         viewGroups(db, user);
                     }
 
+                    else if (choice == 0)
+                    {
+                        std::cout << "Goodbye!\n";
+                        return 0;
+                    }
+
                     else
                     {
                         std::cout << "Invalid choice.\n";
                     }
 
-                    std::cout << "\n\n1. Create a new group\n2. View groups\n";
-                    std::cout << "----------------\n";
-                    std::cout << "Enter choice: ";
-                    std::cin >> choice;
-                    std::cin.ignore();
-                }
+                } while (choice != 0);
             }
             else
             {

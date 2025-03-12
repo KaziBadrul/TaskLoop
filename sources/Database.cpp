@@ -445,9 +445,11 @@ bool Database::createUser(const std::string &username, const std::string &email,
         return false;
     }
 
+    std::string hash = bcrypt::generateHash(password);
+
     sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, email.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 3, password.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, hash.c_str(), -1, SQLITE_STATIC);
 
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
@@ -464,7 +466,7 @@ bool Database::createUser(const std::string &username, const std::string &email,
 // fetched from the database
 bool Database::loginUser(const std::string &username, const std::string &password, User &user)
 {
-    std::string sql = "SELECT id, username, email, password FROM users WHERE username = ? AND password = ?;";
+    std::string sql = "SELECT id, username, email, password FROM users WHERE username = ?;";
     sqlite3_stmt *stmt;
 
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
@@ -474,13 +476,18 @@ bool Database::loginUser(const std::string &username, const std::string &passwor
     }
 
     sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_STATIC);
+    // sqlite3_bind_text(stmt, 2, hash.c_str(), -1, SQLITE_STATIC);
 
     bool loginSuccess = sqlite3_step(stmt) == SQLITE_ROW; // If a row is found, login is successful
 
     if (loginSuccess)
     {
         int id = sqlite3_column_int(stmt, 0);
+        if (!bcrypt::validatePassword(password, reinterpret_cast<const char *>(sqlite3_column_text(stmt, 3))))
+        {
+            std::cerr << "Invalid password.\n";
+            return false;
+        }
         std::string uname = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
         std::string mail = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 2));
         std::string pass = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 3));
