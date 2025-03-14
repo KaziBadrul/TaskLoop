@@ -6,8 +6,10 @@
 #include "./Group.h"
 #include "./Task.h"
 #include "./Color.h"
+#include "./Admin.h"
 #include <ctime>
 #include <iomanip>
+#include <fstream>
 
 class TaskManager
 {
@@ -24,16 +26,19 @@ public:
     void handleSignUp();
     void handleLogin();
     void handleGroupMenu();
-    void handleSelectedGroupMenu(int groupId, Group group);
-    void handleMemberMenu(Group group, int groupId);
-    void addMember(Group group, int groupId);
-    void removeMember(Group group, int groupId);
+    void handleSelectedGroupMenu(int groupId, Group &group);
+    void handleMemberMenu(Group &group, int groupId);
+    void addMember(Admin &admin, Group &group, int groupId);
+    void removeMember(Admin &admin, Group &group, int groupId);
     void handleViewTasks(Group group, int groupId);
     void handleTaskMenu(Group group, int groupId);
+    void handleAdminMenu(Admin &admin, Group &group, std::vector<User> members);
+    // void handleUserMenu(Group &group, int groupId);
     void createGroup();
     void viewGroups();
     void createTask(int groupId);
     void completeTask(int groupId);
+    void saveTaskToFile(int groupId);
 };
 
 #endif

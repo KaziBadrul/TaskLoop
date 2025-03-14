@@ -1,6 +1,6 @@
 #include "../headers/Group.h"
 #include <iostream>
-Group::Group(int id, std::string name) : groupId(id), groupName(name) {}
+Group::Group(int id, std::string name, int ownerId) : groupId(id), groupName(name), ownerId(ownerId) {}
 
 Group::~Group()
 {
@@ -18,6 +18,16 @@ int Group::getGroupId() const
 std::string Group::getGroupName() const
 {
     return groupName;
+}
+
+int Group::getOwnerId() const
+{
+    return ownerId;
+}
+
+int Group::getAdminId() const
+{
+    return adminId;
 }
 
 void Group::addUser(User *user)

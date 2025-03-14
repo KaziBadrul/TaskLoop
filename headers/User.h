@@ -22,6 +22,5 @@ public:
     std::string getUsername() const;
     std::string getEmail() const;
     virtual void showDetails() const;
-    // virtual void showMenu() const;
 };
 #endif

@@ -10,12 +10,16 @@ private:
     int groupId;
     std::string groupName;
     std::vector<User *> members;
+    int adminId;
+    int ownerId;
 
 public:
-    Group(int id, std::string name);
+    Group(int id, std::string name, int ownerId);
     ~Group();
     int getGroupId() const;
     std::string getGroupName() const;
+    int getOwnerId() const;
+    int getAdminId() const;
     void addUser(User *user);
     void removeUser(User *user);
     std::vector<User *> viewGroupMembers();

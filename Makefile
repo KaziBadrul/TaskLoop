@@ -11,7 +11,8 @@ INCLUDE_DIR = include
 SRCS = $(SRC_DIR)/main.cpp $(SRC_DIR)/Database.cpp $(SRC_DIR)/Group.cpp \
        $(SRC_DIR)/NormalUser.cpp $(SRC_DIR)/sqlite3.c $(SRC_DIR)/Task.cpp \
        $(SRC_DIR)/Timer.cpp $(SRC_DIR)/User.cpp $(SRC_DIR)/Color.cpp \
-	   $(SRC_DIR)/bcrypt.cpp $(SRC_DIR)/blowfish.cpp $(SRC_DIR)/TaskManager.cpp
+	   $(SRC_DIR)/bcrypt.cpp $(SRC_DIR)/blowfish.cpp $(SRC_DIR)/TaskManager.cpp \
+	   $(SRC_DIR)/Admin.cpp
 
 # Object files
 OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(filter %.cpp, $(SRCS))) \

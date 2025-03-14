@@ -6,8 +6,8 @@
 enum class PriorityLevel
 {
     LOW,
-    MEDIUM,
-    HIGH
+    IMPORTANT,
+    URGENT
 };
 enum class TaskStatus
 {

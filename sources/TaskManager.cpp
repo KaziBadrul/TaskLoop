@@ -1,5 +1,38 @@
 #include "../headers/TaskManager.h"
 #include <iostream>
+#include <conio.h>
+
+std::string getPassword()
+{
+    std::string password;
+    char ch;
+
+    // we take input until user hits enter which is '\r'
+    while ((ch = _getch()) != '\r')
+    {
+        if (ch == '\b')
+        { // '\b' is backspace
+
+            if (!password.empty())
+            {
+                std::cout << "\b \b";
+                // erase last *
+                // \b moves the cursor one step back.
+                // the space erases the * by overwriting it.
+                // Another \b moves the cursor back again to the correct position.
+
+                password.pop_back();
+            }
+        }
+        else
+        {
+            password.push_back(ch);
+            std::cout << '*';
+        }
+    }
+    std::cout << std::endl;
+    return password;
+}
 
 // Opening the Database
 TaskManager::TaskManager(const std::string &dbName) : db(dbName), currentUser(nullptr) {}
@@ -70,11 +103,11 @@ void TaskManager::handleSignUp()
     std::cout << "Enter email: ";
     std::getline(std::cin, email);
     std::cout << "Enter password: ";
-    std::getline(std::cin, password);
+    password = getPassword();
 
     if (db.createUser(username, email, password))
     {
-        std::cout << "User registered successfully!\n";
+        std::cout << "User registered successfully! \n";
     }
     else
     {
@@ -89,9 +122,11 @@ void TaskManager::handleLogin()
     std::cout << "Enter username: ";
     std::getline(std::cin, username);
     std::cout << "Enter password: ";
-    std::getline(std::cin, password);
+    password = getPassword();
 
     User user;
+    // passing in the user as a reference
+    // it changes the users data within the loginUser func
     if (db.loginUser(username, password, user))
     {
         currentUser = new User(user);
@@ -111,24 +146,40 @@ void TaskManager::handleLogin()
 void TaskManager::handleGroupMenu()
 {
     int choice;
-    std::cout << "1. Create a new group\n2. View groups\n0. Log Out\n";
-    std::cin >> choice;
-    std::cin.ignore();
-
-    switch (choice)
+    do
     {
-    case 1:
-        createGroup();
-        break;
-    case 2:
-        viewGroups();
-        break;
-    case 0:
-        return;
-    default:
-        std::cout << "Invalid choice.\n";
-        break;
-    }
+        SetColor(94);
+        std::cout << "1. ";
+        ResetColor();
+        std::cout << "Create a new group\n";
+        SetColor(94);
+        std::cout << "2. ";
+        ResetColor();
+        std::cout << "View groups\n";
+        SetColor(94);
+        std::cout << "0. ";
+        ResetColor();
+        std::cout << "Log Out\n";
+        std::cout << "Enter choice: ";
+        std::cin >> choice;
+        std::cin.ignore();
+
+        switch (choice)
+        {
+        case 1:
+            createGroup();
+            break;
+        case 2:
+            viewGroups();
+            break;
+        case 0:
+            std::cout << "Goodbye :)" << std::endl;
+            return;
+        default:
+            std::cout << "Invalid choice.\n";
+            break;
+        }
+    } while (choice != 0);
 }
 
 void TaskManager::createGroup()
@@ -150,6 +201,7 @@ void TaskManager::createGroup()
 void TaskManager::viewGroups()
 {
     std::vector<Group> groups = db.getUserGroups(currentUser->getUserId());
+    // std::cout << "Debug: Loaded " << groups.size() << " groups.\n";
     if (groups.empty())
     {
         std::cout << "No groups found.\n";
@@ -168,7 +220,7 @@ void TaskManager::viewGroups()
     }
 
     int groupChoice;
-    std::cout << "Select a group: ";
+    std::cout << "Select a group (0 to cancel): ";
     std::cin >> groupChoice;
     std::cin.ignore();
 
@@ -183,37 +235,42 @@ void TaskManager::viewGroups()
     }
 }
 
-void TaskManager::handleSelectedGroupMenu(int groupId, Group group)
+void TaskManager::handleSelectedGroupMenu(int groupId, Group &group)
 {
     int choice1;
-    std::cout << "Viewing group: ";
-    SetColor(92);
-    std::cout << group.getGroupName() << std::endl;
-    ResetColor();
-    std::cout << "1. View Tasks\n2. View Members\n0. Return to Menu\n";
-    std::cout << "----------------\n";
-    std::cout << "Enter choice: ";
-    std::cin >> choice1;
-    std::cin.ignore();
-    std::cout << std::endl;
 
-    switch (choice1)
+    do
     {
-    case 1:
-        handleTaskMenu(group, groupId);
-        break;
-    case 2:
-        handleMemberMenu(group, groupId);
-        break;
-    case 0:
-        return;
-    default:
-        std::cout << "Invalid choice.\n";
-        break;
-    }
+        std::cout << "Viewing group: ";
+        SetColor(92);
+        std::cout << group.getGroupName() << std::endl;
+        ResetColor();
+
+        std::cout << "1. View Tasks\n2. View Members\n0. Return to Main Menu\n";
+        std::cout << "----------------\n";
+        std::cout << "Enter choice: ";
+        std::cin >> choice1;
+        std::cin.ignore();
+        std::cout << std::endl;
+        switch (choice1)
+        {
+        case 1:
+            handleTaskMenu(group, groupId);
+            break;
+        case 2:
+            handleMemberMenu(group, groupId);
+            break;
+        case 0:
+            return;
+        default:
+            std::cout << "Invalid choice.\n";
+            break;
+        }
+
+    } while (choice1 != 0);
 };
 
-void TaskManager::handleMemberMenu(Group group, int groupId)
+void TaskManager::handleMemberMenu(Group &group, int groupId)
 {
     SetColor(94);
     std::cout << "Viewing members of ";
@@ -234,12 +291,41 @@ void TaskManager::handleMemberMenu(Group group, int groupId)
             SetColor(92);
             std::cout << i << ". ";
             ResetColor();
+            if (member.getUserId() == group.getOwnerId())
+            {
+                SetColor(94);
+                std::cout << member.getUsername() << " (Admin)" << std::endl;
+                ResetColor();
+                i++;
+                continue;
+            }
             std::cout << member.getUsername() << std::endl;
             i++;
         }
     }
-    std::cout << "----------------\n";
 
+    // std::cout << "GROUP OWNER: " << group.getOwnerId() << std::endl;
+    // std::cout << "CURRENT USER: " << currentUser->getUserId() << std::endl;
+    if (group.getOwnerId() == currentUser->getUserId())
+    {
+        Admin admin(currentUser->getUserId(), currentUser->getUsername(), currentUser->getEmail(), "xxx");
+        SetColor(94);
+        std::cout << "You are the admin of this group.\n";
+        ResetColor();
+        handleAdminMenu(admin, group, members);
+    }
+    else
+    {
+        std::cout << "You are a regular member of this group.\n";
+        std::cout << "0. Return to Menu\n";
+        return;
+    }
+}
+
+void TaskManager::handleAdminMenu(Admin &admin, Group &group, std::vector<User> members)
+{
+    int groupId = group.getGroupId();
+    std::cout << "----------------\n";
     std::cout << "1. Add member\n";
     if (!members.empty())
         std::cout << "2. Remove member\n";
@@ -253,10 +339,10 @@ void TaskManager::handleMemberMenu(Group group, int groupId)
     switch (choice2)
     {
     case 1:
-        addMember(group, groupId);
+        addMember(admin, group, groupId);
         break;
     case 2:
-        removeMember(group, groupId);
+        removeMember(admin, group, groupId);
         break;
     case 0:
         return;
@@ -266,35 +352,14 @@ void TaskManager::handleMemberMenu(Group group, int groupId)
     }
 }
 
-void TaskManager::addMember(Group group, int groupId)
+void TaskManager::addMember(Admin &admin, Group &group, int groupId)
 {
-    std::cout << "Enter member username: ";
-    std::string username;
-    std::getline(std::cin, username);
-    if (db.addGroupMember(groupId, username))
-    {
-        group.addUser(new User(username));
-        std::cout << "Member added successfully!\n";
-    }
-    else
-    {
-        std::cout << "Failed to add member.\n";
-    }
+    admin.addMember(db, group);
 }
 
-void TaskManager::removeMember(Group group, int groupId)
+void TaskManager::removeMember(Admin &admin, Group &group, int groupId)
 {
-    std::cout << "Enter member username: ";
-    std::string username;
-    std::getline(std::cin, username);
-    if (db.removeGroupMember(groupId, username))
-    {
-        std::cout << "Member removed successfully!\n";
-    }
-    else
-    {
-        std::cout << "Failed to remove member.\n";
-    }
+    admin.removeMember(db, group);
 }
 
 void TaskManager::handleViewTasks(Group group, int groupId)
@@ -315,8 +380,30 @@ void TaskManager::handleViewTasks(Group group, int groupId)
             std::cout << i << ". " << task.getTaskName() << std::endl;
             ResetColor();
             std::cout << "Description: " << task.getDescription() << std::endl;
-            std::cout << "Priority: " << static_cast<int>(task.getPriority()) << std::endl;
-            std::cout << "Status: " << static_cast<int>(task.getStatus()) << std::endl;
+
+            // Priority Printing
+            std::cout << "Priority: ";
+            if (task.getPriority() == PriorityLevel::URGENT)
+            {
+                SetColor(91);
+                std::cout << "Urgent" << std::endl;
+                ResetColor();
+            }
+            else if (task.getPriority() == PriorityLevel::IMPORTANT)
+            {
+                SetColor(93);
+                std::cout << "Important" << std::endl;
+                ResetColor();
+            }
+            else
+            {
+                SetColor(92);
+                std::cout << "Normal" << std::endl;
+                ResetColor();
+            }
+
+            // Status Printing
+            std::cout << "Status: " << "Pending" << std::endl;
             std::cout << "Creator: " << task.getCreatorName() << std::endl;
             std::cout << "Due Date: " << task.getDueDate() << std::endl;
 
@@ -332,7 +419,7 @@ void TaskManager::handleTaskMenu(Group group, int groupId)
 {
     handleViewTasks(group, groupId);
     int choice;
-    std::cout << "1. Create a new task\n2. Mark task as complete\n0. Return to Menu\n";
+    std::cout << "1. Create a new task\n2. Mark task as complete\n3. Save Task to file\n0. Return to Menu\n";
     std::cin >> choice;
     std::cin.ignore();
 
@@ -345,6 +432,9 @@ void TaskManager::handleTaskMenu(Group group, int groupId)
             break;
         case 2:
             completeTask(groupId);
+            break;
+        case 3:
+            saveTaskToFile(groupId);
             break;
         case 0:
             return;
@@ -413,8 +503,14 @@ void TaskManager::completeTask(int groupId)
         // Update the task status to "Completed" (assuming 2 represents "Completed")
         if (db.updateTaskStatus(taskId, 2)) // 2 corresponds to "Completed"
         {
+            std::string taskName = tasks[taskNumber - 1].getTaskName();
+
             db.completeTask(taskId);
-            std::cout << "Task marked as complete.\n";
+            std::cout << "Task ";
+            SetColor(92);
+            std::cout << taskName;
+            ResetColor();
+            std::cout << " marked as complete.\n";
         }
         else
         {
@@ -425,4 +521,52 @@ void TaskManager::completeTask(int groupId)
     {
         std::cout << "Invalid task number.\n";
     }
+}
+
+void TaskManager::saveTaskToFile(int groupId)
+{
+    std::cout << "Enter the filename to save tasks to (type AUTO to save to a file automatically): ";
+    std::string filename;
+    std::getline(std::cin, filename);
+    if (filename == "AUTO")
+    {
+        std::time_t t = std::time(0); // get time now
+        std::tm *now = std::localtime(&t);
+        filename = "tasks_" + std::to_string(groupId) + "_" + std::to_string(currentUser->getUserId()) + "_" + std::to_string(now->tm_year + 1900) + '-' + std::to_string(now->tm_mon + 1) + '-' + std::to_string(now->tm_mday) + '_' + std::to_string(now->tm_hour) + '-' + std::to_string(now->tm_min) + '-' + std::to_string(now->tm_sec);
+    }
+    filename += ".txt";
+
+    std::ofstream file(filename);
+    if (file.is_open())
+    {
+        std::vector<Task> tasks = db.getGroupTasks(groupId);
+
+        if (tasks.empty())
+        {
+            std::cout << "No tasks found.\n";
+        }
+        else
+        {
+            for (const auto &task : tasks)
+            {
+                file << "Task ID: " << task.getTaskId() << std::endl;
+                file << "Task Name: " << task.getTaskName() << std::endl;
+                file << "Description: " << task.getDescription() << std::endl;
+                file << "Priority: " << static_cast<int>(task.getPriority()) << std::endl;
+                file << "Status: " << static_cast<int>(task.getStatus()) << std::endl;
+                file << "Due Date: " << task.getDueDate() << std::endl;
+                file << std::endl;
+            }
+
+            SetColor(92);
+            std::cout << "Tasks saved to file successfully.\n";
+            ResetColor();
+        }
+    }
+    else
+    {
+        std::cout << "Unable to open file.\n";
+    }
+
+    file.close();
 }

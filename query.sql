@@ -37,19 +37,19 @@
 
 -- SELECT * FROM groups;
 
-CREATE TABLE tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT,
-    due_date INTEGER NOT NULL,  
-    priority INTEGER NOT NULL, -- 1 = Low, 2 = Medium, 3 = High
-    status INTEGER NOT NULL DEFAULT 0, -- 0 = Pending, 1 = In Progress, 2 = Completed
-    group_id INTEGER NOT NULL,
-    creator_id INTEGER NOT NULL, -- Links to users table
-    creator_name TEXT NOT NULL, -- Store the creator's name directly
-    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
-    FOREIGN KEY (creator_id) REFERENCES users(userId) ON DELETE CASCADE
-);
+-- CREATE TABLE tasks (
+--     id INTEGER PRIMARY KEY AUTOINCREMENT,
+--     name TEXT NOT NULL,
+--     description TEXT,
+--     due_date INTEGER NOT NULL,  
+--     priority INTEGER NOT NULL, -- 1 = Low, 2 = Medium, 3 = High
+--     status INTEGER NOT NULL DEFAULT 0, -- 0 = Pending, 1 = In Progress, 2 = Completed
+--     group_id INTEGER NOT NULL,
+--     creator_id INTEGER NOT NULL, -- Links to users table
+--     creator_name TEXT NOT NULL, -- Store the creator's name directly
+--     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+--     FOREIGN KEY (creator_id) REFERENCES users(userId) ON DELETE CASCADE
+-- );
 
 -- CREATE TABLE tasks_new (
 --     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,3 +64,7 @@ CREATE TABLE tasks (
 --     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
 --     FOREIGN KEY (creator_id) REFERENCES users(userId) ON DELETE CASCADE
 -- );
+
+SELECT g.id, g.name FROM groups g 
+JOIN group_members gm ON g.id = gm.group_id 
+WHERE gm.user_id = 6;

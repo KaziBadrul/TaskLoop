@@ -35,6 +35,8 @@ bool Database::createGroup(const std::string &groupName, int ownerId)
     sqlite3_bind_text(stmt, 1, groupName.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt, 2, ownerId);
 
+    // std::cout << "Created group: " << groupName << "with Owner Id: " << ownerId << std::endl;
+
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
         std::cerr << "Error creating group: " << sqlite3_errmsg(db) << std::endl;
@@ -174,7 +176,7 @@ bool Database::createTask(const std::string &taskName, const std::string &descri
 std::vector<Group> Database::getUserGroups(int userId)
 {
     std::vector<Group> groups;
-    std::string sql = "SELECT g.id, g.name FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ?;";
+    std::string sql = "SELECT g.id, g.name, g.owner_id FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ?;";
     sqlite3_stmt *stmt;
 
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
@@ -188,9 +190,13 @@ std::vector<Group> Database::getUserGroups(int userId)
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
         int groupId = sqlite3_column_int(stmt, 0);
+        // const char *groupNameCStr = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
         std::string groupName = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
+        int ownerId = sqlite3_column_int(stmt, 2);
 
-        groups.push_back(Group(groupId, groupName));
+        // std::cout << "Group Fetched: " << groupName << std::endl;
+
+        groups.push_back(Group(groupId, groupName, ownerId));
     }
 
     sqlite3_finalize(stmt);
